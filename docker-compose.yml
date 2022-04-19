@@ -1,14 +1,16 @@
 version: "3.3"
 
 services:
-  nats:
-    image: 'nats'
-    # entrypoint: "/gnatsd -DV"
-    expose:
-      - "4222"
+  nats-server:
+    image: nats
+    restart: always
     ports:
-      - "8222:8222"
-    # hostname: nats-server
+      - "4222:4222"
+    networks:
+      - betnominetwork
+    # entrypoint: "/gnatsd -DV"
+    # expose:
+    #   - "4222"
   
   envoy:
     image: envoyproxy/envoy:v1.22.0
