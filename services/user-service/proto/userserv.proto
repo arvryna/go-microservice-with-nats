@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package usermanager;
+
+// Cmd to generate pb.go files: protoc --go_out=. proto/* --go-grpc_out=.
+option go_package = "./usermanager"; // Generate pb.go files in this directory
+
+service UserManager{
+    rpc CreateUser (NewUser) returns (User) {}
+}
+
+message NewUser{
+    string name = 1;
+    string email = 2;
+}
+
+message User{
+    string name = 1;
+    string email = 2;
+    string token = 3;
+}

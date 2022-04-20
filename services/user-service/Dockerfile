@@ -22,6 +22,8 @@ FROM alpine:latest
 RUN mkdir /userdata
 WORKDIR /userdata
 
+COPY usermanager .
+
 COPY --from=build-env-user-service /go/bin/user-service /go/bin/user-service
 
 ENTRYPOINT ["/go/bin/user-service"]
