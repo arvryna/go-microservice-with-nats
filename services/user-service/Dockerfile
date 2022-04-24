@@ -1,5 +1,5 @@
 # ************ STAGE - 1 : build-env *******************
-FROM golang:1.18.0-alpine as build-env-user-service
+FROM golang:1.18.0-alpine as builder
 
 #  All these steps will be cached -----
 RUN mkdir /user-service
@@ -24,7 +24,7 @@ WORKDIR /userdata
 
 COPY pb .
 
-COPY --from=build-env-user-service /go/bin/user-service /go/bin/user-service
+COPY --from=builder /go/bin/user-service /go/bin/user-service
 
 ENTRYPOINT ["/go/bin/user-service"]
 

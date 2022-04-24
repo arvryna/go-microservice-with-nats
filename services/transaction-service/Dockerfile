@@ -1,5 +1,5 @@
 # ************ STAGE - 1 : build-env *******************
-FROM golang:1.18.0-alpine as build-env-tran-service
+FROM golang:1.18.0-alpine as builder 
 
 #  All these steps will be cached -----
 RUN mkdir /tran-service
@@ -22,6 +22,6 @@ FROM alpine:latest
 RUN mkdir /transdata
 WORKDIR /transdata
 
-COPY --from=build-env-tran-service /go/bin/tran-service /go/bin/tran-service
+COPY --from=builder /go/bin/tran-service /go/bin/tran-service
 
 ENTRYPOINT ["/go/bin/tran-service"]
