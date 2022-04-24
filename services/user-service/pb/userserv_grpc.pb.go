@@ -4,7 +4,7 @@
 // - protoc             v3.12.4
 // source: proto/userserv.proto
 
-package usermanager
+package pb
 
 import (
 	context "context"

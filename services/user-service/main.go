@@ -7,7 +7,7 @@ import (
 	"net"
 	"time"
 
-	"github.com/arvryna/betnomi/user-service/usermanager"
+	"github.com/arvryna/betnomi/user-service/pb"
 	"github.com/google/uuid"
 	"github.com/nats-io/nats.go"
 	"google.golang.org/grpc"
@@ -41,12 +41,12 @@ func performHealthCheck(nc *nats.Conn) {
 
 // Grpc Stuffs
 type UserManagerServer struct {
-	usermanager.UnimplementedUserManagerServer
+	pb.UnimplementedUserManagerServer
 }
 
-func (u *UserManagerServer) CreateUser(ctx context.Context, in *usermanager.NewUser) (*usermanager.User, error) {
+func (u *UserManagerServer) CreateUser(ctx context.Context, in *pb.NewUser) (*pb.User, error) {
 	log.Println("CreateUser gRPC request")
-	return &usermanager.User{Name: in.Name, Email: in.Email, Token: uuid.New().String()}, nil
+	return &pb.User{Name: in.Name, Email: in.Email, Token: uuid.New().String()}, nil
 }
 
 func setupGRPCServer() {
@@ -56,7 +56,7 @@ func setupGRPCServer() {
 	}
 
 	s := grpc.NewServer()
-	usermanager.RegisterUserManagerServer(s, &UserManagerServer{})
+	pb.RegisterUserManagerServer(s, &UserManagerServer{})
 
 	log.Println("Trying to start gRPC server...")
 
