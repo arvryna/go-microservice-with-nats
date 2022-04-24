@@ -10,7 +10,7 @@ import "google/api/annotations.proto";
 service UserManager{
     rpc CreateUser (NewUser) returns (User) {
         option (google.api.http) = {
-            post: "/createuser"
+            post: "/user/createuser"
             // body: "*"
         };
     }
