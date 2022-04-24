@@ -23,6 +23,8 @@ RUN mkdir /userdata
 WORKDIR /userdata
 
 COPY usermanager .
+COPY proto . 
+COPY pb .
 
 COPY --from=build-env-user-service /go/bin/user-service /go/bin/user-service
 
