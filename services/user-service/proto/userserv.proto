@@ -11,7 +11,7 @@ service UserManager{
     rpc CreateUser (NewUser) returns (User) {
         option (google.api.http) = {
             post: "/createuser"
-            body: "*"
+            // body: "*"
         };
     }
 }
