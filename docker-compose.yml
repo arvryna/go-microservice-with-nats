@@ -16,6 +16,7 @@ services:
     image: envoyproxy/envoy:v1.22.0
     ports:
       - "7778:7778"
+      - "9901:9901" # admin interface
     networks:
       - betnominetwork
     volumes:
