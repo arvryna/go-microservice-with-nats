@@ -23,7 +23,7 @@ static_resources:
               # NOTE: by default, matching happens based on the gRPC route, and not on the incoming request path.
               # Reference: https://envoyproxy.io/docs/envoy/latest/configuration/http/http_filters/grpc_json_transcoder_filter#route-configs-for-transcoded-requests
               - match: {prefix: "/user/"}
-                route: {cluster: grpc, timeout: 60s}
+                route: {cluster: user-service, timeout: 60s}
           http_filters:
           - name: envoy.filters.http.grpc_json_transcoder
             typed_config:
@@ -41,7 +41,7 @@ static_resources:
               "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
 
   clusters:
-  - name: grpc
+  - name: user-service
     type: LOGICAL_DNS
     lb_policy: ROUND_ROBIN
     dns_lookup_family: V4_ONLY
@@ -51,11 +51,11 @@ static_resources:
         explicit_http_config:
           http2_protocol_options: {}
     load_assignment:
-      cluster_name: grpc
+      cluster_name: user-service
       endpoints:
       - lb_endpoints:
         - endpoint:
             address:
               socket_address:
-                address: 0.0.0.0
+                address: user-service
                 port_value: 9091
