@@ -68,7 +68,6 @@ func main() {
 	nc := connectNats()
 
 	go performHealthCheck(nc)
-
 	go setupGRPCServer()
 
 	// how will you retry if there is error ?
