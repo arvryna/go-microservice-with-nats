@@ -15,7 +15,7 @@ services:
   envoy:
     image: envoyproxy/envoy:v1.22.0
     ports:
-      - "10000:10000"
+      - "7777:7777"
     networks:
       - betnominetwork
     volumes:
