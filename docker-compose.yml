@@ -19,7 +19,7 @@ services:
     networks:
       - betnominetwork
     volumes:
-      - ./services/user-service/pb/descriptor.pb:/descriptor.pb
+      - ./services:/services
       - ./envoy.yaml:/etc/envoy/envoy.yaml
 
   database:

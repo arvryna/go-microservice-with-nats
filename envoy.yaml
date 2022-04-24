@@ -28,7 +28,7 @@ static_resources:
           - name: envoy.filters.http.grpc_json_transcoder
             typed_config:
               "@type": type.googleapis.com/envoy.extensions.filters.http.grpc_json_transcoder.v3.GrpcJsonTranscoder
-              proto_descriptor: "/descriptor.pb"
+              proto_descriptor: "/services/user-service/pb/descriptor.pb"
               services: ["usermanager.UserManager"]
               print_options:
                 add_whitespace: true
@@ -59,5 +59,5 @@ static_resources:
                 # WARNING: "docker.for.mac.localhost" has been deprecated from Docker v18.03.0.
                 # If you're running an older version of Docker, please use "docker.for.mac.localhost" instead.
                 # Reference: https://docs.docker.com/docker-for-mac/release-notes/#docker-community-edition-18030-ce-mac59-2018-03-26
-                address: host.docker.internal
+                address: 0.0.0.0
                 port_value: 7777

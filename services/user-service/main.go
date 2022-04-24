@@ -50,13 +50,15 @@ func (u *UserManagerServer) CreateUser(ctx context.Context, in *usermanager.NewU
 }
 
 func setupGRPCServer() {
-	listener, err := net.Listen("tcp", ":9101")
+	listener, err := net.Listen("tcp", ":9091")
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	s := grpc.NewServer()
 	usermanager.RegisterUserManagerServer(s, &UserManagerServer{})
+
+	log.Println("Trying to start gRPC server...")
 
 	err = s.Serve(listener)
 	if err != nil {
