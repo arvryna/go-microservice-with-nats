@@ -3,10 +3,17 @@ syntax = "proto3";
 package usermanager;
 
 // Cmd to generate pb.go files: protoc --go_out=. proto/* --go-grpc_out=.
-option go_package = "./usermanager"; // Generate pb.go files in this directory
+option go_package = ".;pb"; // Generate pb.go files in this directory
+
+import "google/api/annotations.proto";
 
 service UserManager{
-    rpc CreateUser (NewUser) returns (User) {}
+    rpc CreateUser (NewUser) returns (User) {
+        option (google.api.http) = {
+            post: "/createuser"
+            body: "*"
+        };
+    }
 }
 
 message NewUser{
