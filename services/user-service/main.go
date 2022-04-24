@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/arvryna/betnomi/user-service/pb"
+	empty "github.com/golang/protobuf/ptypes/empty"
 	"github.com/google/uuid"
 	"github.com/nats-io/nats.go"
 	"google.golang.org/grpc"
@@ -47,6 +48,17 @@ type UserManagerServer struct {
 func (u *UserManagerServer) CreateUser(ctx context.Context, in *pb.NewUser) (*pb.User, error) {
 	log.Println("CreateUser gRPC request")
 	return &pb.User{Name: in.Name, Email: in.Email, Token: uuid.New().String()}, nil
+}
+
+func (u *UserManagerServer) Login(context.Context, *empty.Empty) (*pb.LoginToken, error) {
+	token := uuid.New().String()
+	// Create user with the above token and then send that token as response
+	return &pb.LoginToken{Token: token}, nil
+}
+
+func (u *UserManagerServer) Balance(context.Context, *empty.Empty) (*pb.UserBalance, error) {
+	balance := 100
+	return &pb.Balance{Balance: balance}, nil
 }
 
 const PORT = ":9091"

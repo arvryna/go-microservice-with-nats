@@ -25,8 +25,7 @@ service UserManager{
 
     rpc Balance (google.protobuf.Empty) returns (UserBalance){
         option (google.api.http) = {
-            post: "/user/balance"
-            body: "*"
+            get: "/user/balance"
         };
     }
 }
