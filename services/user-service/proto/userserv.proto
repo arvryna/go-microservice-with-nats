@@ -6,6 +6,7 @@ package usermanager;
 option go_package = ".;pb"; // Generate pb.go files in this directory
 
 import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
 
 service UserManager{
     rpc CreateUser (NewUser) returns (User) {
@@ -14,6 +15,28 @@ service UserManager{
             body: "*"
         };
     }
+
+    rpc Login (google.protobuf.Empty) returns (LoginToken){
+        option (google.api.http) = {
+            post: "/user/login"
+            body: "*"
+        };
+    }
+
+    rpc Balance (google.protobuf.Empty) returns (UserBalance){
+        option (google.api.http) = {
+            post: "/user/balance"
+            body: "*"
+        };
+    }
+}
+
+message UserBalance {
+    int64 balance=1;
+}
+
+message LoginToken{
+    string token=1;
 }
 
 message NewUser{

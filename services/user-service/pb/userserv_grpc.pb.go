@@ -8,6 +8,7 @@ package pb
 
 import (
 	context "context"
+	empty "github.com/golang/protobuf/ptypes/empty"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -23,6 +24,8 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type UserManagerClient interface {
 	CreateUser(ctx context.Context, in *NewUser, opts ...grpc.CallOption) (*User, error)
+	Login(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*LoginToken, error)
+	Balance(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*UserBalance, error)
 }
 
 type userManagerClient struct {
@@ -42,11 +45,31 @@ func (c *userManagerClient) CreateUser(ctx context.Context, in *NewUser, opts ..
 	return out, nil
 }
 
+func (c *userManagerClient) Login(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*LoginToken, error) {
+	out := new(LoginToken)
+	err := c.cc.Invoke(ctx, "/usermanager.UserManager/Login", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userManagerClient) Balance(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*UserBalance, error) {
+	out := new(UserBalance)
+	err := c.cc.Invoke(ctx, "/usermanager.UserManager/Balance", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // UserManagerServer is the server API for UserManager service.
 // All implementations must embed UnimplementedUserManagerServer
 // for forward compatibility
 type UserManagerServer interface {
 	CreateUser(context.Context, *NewUser) (*User, error)
+	Login(context.Context, *empty.Empty) (*LoginToken, error)
+	Balance(context.Context, *empty.Empty) (*UserBalance, error)
 	mustEmbedUnimplementedUserManagerServer()
 }
 
@@ -56,6 +79,12 @@ type UnimplementedUserManagerServer struct {
 
 func (UnimplementedUserManagerServer) CreateUser(context.Context, *NewUser) (*User, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateUser not implemented")
+}
+func (UnimplementedUserManagerServer) Login(context.Context, *empty.Empty) (*LoginToken, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
+}
+func (UnimplementedUserManagerServer) Balance(context.Context, *empty.Empty) (*UserBalance, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Balance not implemented")
 }
 func (UnimplementedUserManagerServer) mustEmbedUnimplementedUserManagerServer() {}
 
@@ -88,6 +117,42 @@ func _UserManager_CreateUser_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _UserManager_Login_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(empty.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserManagerServer).Login(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/usermanager.UserManager/Login",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserManagerServer).Login(ctx, req.(*empty.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserManager_Balance_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(empty.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserManagerServer).Balance(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/usermanager.UserManager/Balance",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserManagerServer).Balance(ctx, req.(*empty.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // UserManager_ServiceDesc is the grpc.ServiceDesc for UserManager service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -98,6 +163,14 @@ var UserManager_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CreateUser",
 			Handler:    _UserManager_CreateUser_Handler,
+		},
+		{
+			MethodName: "Login",
+			Handler:    _UserManager_Login_Handler,
+		},
+		{
+			MethodName: "Balance",
+			Handler:    _UserManager_Balance_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

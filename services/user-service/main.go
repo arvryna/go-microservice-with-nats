@@ -49,8 +49,10 @@ func (u *UserManagerServer) CreateUser(ctx context.Context, in *pb.NewUser) (*pb
 	return &pb.User{Name: in.Name, Email: in.Email, Token: uuid.New().String()}, nil
 }
 
+const PORT = ":9091"
+
 func setupGRPCServer() {
-	listener, err := net.Listen("tcp", ":9091")
+	listener, err := net.Listen("tcp", PORT)
 	if err != nil {
 		log.Fatal(err)
 	}
