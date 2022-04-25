@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net"
@@ -64,6 +65,12 @@ func (u *UserManagerServer) Login(ctx context.Context, in *empty.Empty) (*pb.Log
 	return &pb.LoginToken{Token: user.Token}, nil
 }
 
+func getUserWithId(id int) model.User {
+	var user model.User
+	DB.Where("id = ?", id).Find(&user)
+	return user
+}
+
 func getUserWithToken(token string) model.User {
 	var user model.User
 	DB.Where("token = ?", token).Find(&user)
@@ -94,16 +101,38 @@ func setupGRPCServer() {
 	}
 }
 
+// DTO
+type TransactionDto struct {
+	Id                int `gorm:"primaryKey"`
+	TransactionAmount int64
+	IsUp              bool
+	UserId            int
+	Before            int64
+	After             int64
+	CreatedAt         time.Time
+}
+
 func main() {
 	DB = db.Init()
-
 	nc := connectNats()
 
 	// gets token, sends userId
-	nc.Subscribe("GetUserId.UserService", func(m *nats.Msg) {
+	nc.Subscribe("userservice.getuserid", func(m *nats.Msg) {
 		id := getUserWithToken(string(m.Data)).Id
-		fmt.Println("UserID found", id)
 		m.Respond([]byte(strconv.Itoa(id)))
+	})
+
+	nc.Subscribe("userservice.getuserbalance", func(m *nats.Msg) {
+		balance := getUserWithToken(string(m.Data)).Balance
+		m.Respond([]byte(strconv.Itoa(int(balance))))
+	})
+
+	nc.Subscribe("userservice.updatebalance", func(m *nats.Msg) {
+		var transaction TransactionDto
+		json.Unmarshal(m.Data, &transaction)
+		user := getUserWithId(transaction.UserId)
+		user.Balance = transaction.After
+		DB.Save(&user)
 	})
 
 	go performHealthCheck(nc)

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net"
@@ -9,13 +10,16 @@ import (
 	"time"
 
 	"github.com/arvryna/betnomi/transaction-service/db"
+	"github.com/arvryna/betnomi/transaction-service/db/model"
 	"github.com/arvryna/betnomi/transaction-service/pb"
 	"github.com/nats-io/nats.go"
 	"google.golang.org/grpc"
+	"gorm.io/gorm"
 )
 
 var (
 	NC *nats.Conn
+	DB *gorm.DB
 )
 
 func connectNats() *nats.Conn {
@@ -36,19 +40,29 @@ type TransactionManagerServer struct {
 
 func (t *TransactionManagerServer) TransactionUp(ctx context.Context, in *pb.NewTransaction) (*pb.TransactionResponse, error) {
 	// Get user ID
-	msg, err := NC.Request("GetUserId.UserService", []byte(in.Token), 1000*time.Millisecond)
-	if err != nil {
-		fmt.Println("GetUserId Nats request failed for token", in.Token)
-	} else {
-		id, _ := strconv.Atoi(string(msg.Data))
-		fmt.Println("UserID", id)
-	}
+	msg, _ := NC.Request("userservice.getuserid", []byte(in.Token), 1000*time.Millisecond)
+	id, _ := strconv.Atoi(string(msg.Data))
 
 	// Get user Balance
-	// Update user Balance
+	msg, _ = NC.Request("userservice.getuserbalance", []byte(in.Token), 1000*time.Millisecond)
+	balance, _ := strconv.Atoi(string(msg.Data))
 
-	balance := int64(101)
-	return &pb.TransactionResponse{Balance: balance}, nil
+	var transaction model.Transaction
+	transaction.TransactionAmount = in.Value
+	transaction.UserId = id
+	transaction.Before = int64(balance)
+	transaction.After = int64(balance) + in.Value // Take existing balance and add new value to it
+	transaction.IsUp = true
+
+	b, _ := json.Marshal(transaction)
+	// Get user Balance
+	NC.Request("userservice.updatebalance", b, 1000*time.Millisecond)
+
+	if res := DB.Create(&transaction); res.Error != nil {
+		log.Println("Transaction creation DB request failed: ", res.Error)
+	}
+
+	return &pb.TransactionResponse{Balance: int64(transaction.After)}, nil
 }
 func (t *TransactionManagerServer) TransactionDown(ctx context.Context, in *pb.NewTransaction) (*pb.TransactionResponse, error) {
 	balance := int64(101)
@@ -75,9 +89,8 @@ func setupGRPCServer() {
 }
 
 func main() {
-	db.Init()
-
-	NC := connectNats()
+	DB = db.Init()
+	NC = connectNats()
 
 	NC.Subscribe("Ping.TransactionService", func(m *nats.Msg) {
 		if string(m.Data) == "Ping" {
