@@ -24,13 +24,15 @@ static_resources:
               # Reference: https://envoyproxy.io/docs/envoy/latest/configuration/http/http_filters/grpc_json_transcoder_filter#route-configs-for-transcoded-requests
               - match: {prefix: "/user/"}
                 route: {cluster: user-service, timeout: 60s}
+              - match: {prefix: "/transaction/"}
+                route: {cluster: transaction-service, timeout: 60s}
           http_filters:
           - name: envoy.filters.http.grpc_json_transcoder
             typed_config:
               "@type": type.googleapis.com/envoy.extensions.filters.http.grpc_json_transcoder.v3.GrpcJsonTranscoder
               proto_descriptor: "/desc.pb"
               match_incoming_request_route: true
-              services: ["usermanager.UserManager"]
+              services: ["usermanager.UserManager", "transervice.TransactionManager"]
               print_options:
                 add_whitespace: true
                 always_print_primitive_fields: true
@@ -59,3 +61,22 @@ static_resources:
               socket_address:
                 address: user-service
                 port_value: 9091
+
+  - name: transaction-service
+    type: LOGICAL_DNS
+    lb_policy: ROUND_ROBIN
+    dns_lookup_family: V4_ONLY
+    typed_extension_protocol_options:
+      envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
+        "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
+        explicit_http_config:
+          http2_protocol_options: {}
+    load_assignment:
+      cluster_name: transaction-service
+      endpoints:
+      - lb_endpoints:
+        - endpoint:
+            address:
+              socket_address:
+                address: transaction-service
+                port_value: 9092
