@@ -7,6 +7,7 @@ import (
 	"net"
 	"time"
 
+	"github.com/arvryna/betnomi/user-service/db"
 	"github.com/arvryna/betnomi/user-service/pb"
 	empty "github.com/golang/protobuf/ptypes/empty"
 	"github.com/google/uuid"
@@ -81,6 +82,8 @@ func setupGRPCServer() {
 }
 
 func main() {
+	db.Init()
+
 	nc := connectNats()
 
 	go performHealthCheck(nc)

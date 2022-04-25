@@ -7,6 +7,7 @@ import (
 	"net"
 	"time"
 
+	"github.com/arvryna/betnomi/transaction-service/db"
 	"github.com/arvryna/betnomi/transaction-service/pb"
 	"github.com/nats-io/nats.go"
 	"google.golang.org/grpc"
@@ -57,6 +58,8 @@ func setupGRPCServer() {
 }
 
 func main() {
+	db.Init()
+
 	nc := connectNats()
 
 	nc.Subscribe("Ping.TransactionService", func(m *nats.Msg) {
