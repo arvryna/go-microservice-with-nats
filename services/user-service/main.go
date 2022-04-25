@@ -57,8 +57,8 @@ func (u *UserManagerServer) Login(context.Context, *empty.Empty) (*pb.LoginToken
 }
 
 func (u *UserManagerServer) Balance(context.Context, *empty.Empty) (*pb.UserBalance, error) {
-	balance := 100
-	return &pb.Balance{Balance: balance}, nil
+	balance := int64(100)
+	return &pb.UserBalance{Balance: balance}, nil
 }
 
 const PORT = ":9091"
