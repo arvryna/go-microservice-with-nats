@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"strconv"
 	"time"
 
 	"github.com/arvryna/betnomi/user-service/db"
@@ -32,9 +33,6 @@ func connectNats() *nats.Conn {
 	return nc
 }
 
-/*
-User service doesn't need to ask from transaction to solve some problems
-*/
 func performHealthCheck(nc *nats.Conn) {
 	for {
 		time.Sleep(2 * time.Second)
@@ -47,7 +45,6 @@ func performHealthCheck(nc *nats.Conn) {
 	}
 }
 
-// Grpc Stuffs
 type UserManagerServer struct {
 	pb.UnimplementedUserManagerServer
 }
@@ -67,15 +64,15 @@ func (u *UserManagerServer) Login(ctx context.Context, in *empty.Empty) (*pb.Log
 	return &pb.LoginToken{Token: user.Token}, nil
 }
 
-// func getUserWithToken() model.User {
-
-// }
+func getUserWithToken(token string) model.User {
+	var user model.User
+	DB.Where("token = ?", token).Find(&user)
+	return user
+}
 
 func (u *UserManagerServer) Balance(ctx context.Context, in *pb.ExistingUser) (*pb.UserBalance, error) {
-	var user model.User
-	fmt.Println(in.Token)
-	DB.Where("token = ?", in.Token).Find(&user)
-	return &pb.UserBalance{Balance: user.Balance}, nil
+	balance := getUserWithToken(in.Token).Balance
+	return &pb.UserBalance{Balance: balance}, nil
 }
 
 const PORT = ":9091"
@@ -101,6 +98,13 @@ func main() {
 	DB = db.Init()
 
 	nc := connectNats()
+
+	// gets token, sends userId
+	nc.Subscribe("GetUserId.UserService", func(m *nats.Msg) {
+		id := getUserWithToken(string(m.Data)).Id
+		fmt.Println("UserID found", id)
+		m.Respond([]byte(strconv.Itoa(id)))
+	})
 
 	go performHealthCheck(nc)
 

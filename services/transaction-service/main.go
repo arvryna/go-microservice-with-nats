@@ -5,12 +5,17 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"strconv"
 	"time"
 
 	"github.com/arvryna/betnomi/transaction-service/db"
 	"github.com/arvryna/betnomi/transaction-service/pb"
 	"github.com/nats-io/nats.go"
 	"google.golang.org/grpc"
+)
+
+var (
+	NC *nats.Conn
 )
 
 func connectNats() *nats.Conn {
@@ -30,6 +35,18 @@ type TransactionManagerServer struct {
 }
 
 func (t *TransactionManagerServer) TransactionUp(ctx context.Context, in *pb.NewTransaction) (*pb.TransactionResponse, error) {
+	// Get user ID
+	msg, err := NC.Request("GetUserId.UserService", []byte(in.Token), 1000*time.Millisecond)
+	if err != nil {
+		fmt.Println("GetUserId Nats request failed for token", in.Token)
+	} else {
+		id, _ := strconv.Atoi(string(msg.Data))
+		fmt.Println("UserID", id)
+	}
+
+	// Get user Balance
+	// Update user Balance
+
 	balance := int64(101)
 	return &pb.TransactionResponse{Balance: balance}, nil
 }
@@ -60,9 +77,9 @@ func setupGRPCServer() {
 func main() {
 	db.Init()
 
-	nc := connectNats()
+	NC := connectNats()
 
-	nc.Subscribe("Ping.TransactionService", func(m *nats.Msg) {
+	NC.Subscribe("Ping.TransactionService", func(m *nats.Msg) {
 		if string(m.Data) == "Ping" {
 			m.Respond([]byte("Pong"))
 		}

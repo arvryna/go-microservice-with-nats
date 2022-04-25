@@ -25,7 +25,7 @@ service TransactionManager{
 }
 
 message NewTransaction{
-    string UserId = 1;
+    string Token = 1;
     int64 Value = 2;
 } 
 
