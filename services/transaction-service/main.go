@@ -64,9 +64,32 @@ func (t *TransactionManagerServer) TransactionUp(ctx context.Context, in *pb.New
 
 	return &pb.TransactionResponse{Balance: int64(transaction.After)}, nil
 }
+
 func (t *TransactionManagerServer) TransactionDown(ctx context.Context, in *pb.NewTransaction) (*pb.TransactionResponse, error) {
-	balance := int64(101)
-	return &pb.TransactionResponse{Balance: balance}, nil
+
+	msg, _ := NC.Request("userservice.getuserid", []byte(in.Token), 1000*time.Millisecond)
+	id, _ := strconv.Atoi(string(msg.Data))
+
+	// Get user Balance
+	msg, _ = NC.Request("userservice.getuserbalance", []byte(in.Token), 1000*time.Millisecond)
+	balance, _ := strconv.Atoi(string(msg.Data))
+
+	var transaction model.Transaction
+	transaction.TransactionAmount = in.Value
+	transaction.UserId = id
+	transaction.Before = int64(balance)
+	transaction.After = int64(balance) - in.Value // Take existing balance and subtract new value to it
+	transaction.IsUp = false
+
+	b, _ := json.Marshal(transaction)
+	// Get user Balance
+	NC.Request("userservice.updatebalance", b, 1000*time.Millisecond)
+
+	if res := DB.Create(&transaction); res.Error != nil {
+		log.Println("Transaction creation DB request failed: ", res.Error)
+	}
+
+	return &pb.TransactionResponse{Balance: int64(transaction.After)}, nil
 }
 
 const PORT = ":9092"
