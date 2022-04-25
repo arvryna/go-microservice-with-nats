@@ -8,9 +8,6 @@ services:
       - "4222:4222"
     networks:
       - betnominetwork
-    # entrypoint: "/gnatsd -DV"
-    # expose:
-    #   - "4222"
   
   envoy:
     image: envoyproxy/envoy:v1.22.0
@@ -61,15 +58,6 @@ services:
       - database
     networks:
       - betnominetwork
-
-  # cache:
-  #   image: redis
-  #   restart: always
-  #   ports:
-  #     - '6379:6379'
-  #   command: redis-server --save 20 1 --loglevel warning --requirepass eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
-  #   volumes: 
-  #     - cache:/data
 
 volumes:
   pgdb:

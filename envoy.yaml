@@ -24,7 +24,7 @@ static_resources:
               # Reference: https://envoyproxy.io/docs/envoy/latest/configuration/http/http_filters/grpc_json_transcoder_filter#route-configs-for-transcoded-requests
               - match: {prefix: "/user/"}
                 route: {cluster: user-service, timeout: 60s}
-              - match: {prefix: "/transaction/"}
+              - match: {prefix: "/transactions/"}
                 route: {cluster: transaction-service, timeout: 60s}
           http_filters:
           - name: envoy.filters.http.grpc_json_transcoder
