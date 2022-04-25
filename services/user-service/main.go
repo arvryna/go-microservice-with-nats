@@ -8,11 +8,17 @@ import (
 	"time"
 
 	"github.com/arvryna/betnomi/user-service/db"
+	"github.com/arvryna/betnomi/user-service/db/model"
 	"github.com/arvryna/betnomi/user-service/pb"
 	empty "github.com/golang/protobuf/ptypes/empty"
 	"github.com/google/uuid"
 	"github.com/nats-io/nats.go"
 	"google.golang.org/grpc"
+	"gorm.io/gorm"
+)
+
+var (
+	DB *gorm.DB
 )
 
 func connectNats() *nats.Conn {
@@ -51,15 +57,25 @@ func (u *UserManagerServer) CreateUser(ctx context.Context, in *pb.NewUser) (*pb
 	return &pb.User{Name: in.Name, Email: in.Email, Token: uuid.New().String()}, nil
 }
 
-func (u *UserManagerServer) Login(context.Context, *empty.Empty) (*pb.LoginToken, error) {
-	token := uuid.New().String()
-	// Create user with the above token and then send that token as response
-	return &pb.LoginToken{Token: token}, nil
+func (u *UserManagerServer) Login(ctx context.Context, in *empty.Empty) (*pb.LoginToken, error) {
+	var user model.User
+	user.Name = "user"
+	user.Token = uuid.New().String()
+	if res := DB.Create(&user); res.Error != nil {
+		log.Println("User creation DB request failed: ", res.Error)
+	}
+	return &pb.LoginToken{Token: user.Token}, nil
 }
 
-func (u *UserManagerServer) Balance(context.Context, *empty.Empty) (*pb.UserBalance, error) {
-	balance := int64(100)
-	return &pb.UserBalance{Balance: balance}, nil
+// func getUserWithToken() model.User {
+
+// }
+
+func (u *UserManagerServer) Balance(ctx context.Context, in *pb.ExistingUser) (*pb.UserBalance, error) {
+	var user model.User
+	fmt.Println(in.Token)
+	DB.Where("token = ?", in.Token).Find(&user)
+	return &pb.UserBalance{Balance: user.Balance}, nil
 }
 
 const PORT = ":9091"
@@ -82,11 +98,12 @@ func setupGRPCServer() {
 }
 
 func main() {
-	db.Init()
+	DB = db.Init()
 
 	nc := connectNats()
 
 	go performHealthCheck(nc)
+
 	go setupGRPCServer()
 
 	// how will you retry if there is error ?

@@ -23,7 +23,7 @@ service UserManager{
         };
     }
 
-    rpc Balance (google.protobuf.Empty) returns (UserBalance){
+    rpc Balance (ExistingUser) returns (UserBalance){
         option (google.api.http) = {
             get: "/user/balance"
         };
@@ -36,6 +36,10 @@ message UserBalance {
 
 message LoginToken{
     string token=1;
+}
+
+message ExistingUser{
+    string Token=1;
 }
 
 message NewUser{

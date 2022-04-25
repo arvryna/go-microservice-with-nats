@@ -25,7 +25,7 @@ const _ = grpc.SupportPackageIsVersion7
 type UserManagerClient interface {
 	CreateUser(ctx context.Context, in *NewUser, opts ...grpc.CallOption) (*User, error)
 	Login(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*LoginToken, error)
-	Balance(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*UserBalance, error)
+	Balance(ctx context.Context, in *ExistingUser, opts ...grpc.CallOption) (*UserBalance, error)
 }
 
 type userManagerClient struct {
@@ -54,7 +54,7 @@ func (c *userManagerClient) Login(ctx context.Context, in *empty.Empty, opts ...
 	return out, nil
 }
 
-func (c *userManagerClient) Balance(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*UserBalance, error) {
+func (c *userManagerClient) Balance(ctx context.Context, in *ExistingUser, opts ...grpc.CallOption) (*UserBalance, error) {
 	out := new(UserBalance)
 	err := c.cc.Invoke(ctx, "/usermanager.UserManager/Balance", in, out, opts...)
 	if err != nil {
@@ -69,7 +69,7 @@ func (c *userManagerClient) Balance(ctx context.Context, in *empty.Empty, opts .
 type UserManagerServer interface {
 	CreateUser(context.Context, *NewUser) (*User, error)
 	Login(context.Context, *empty.Empty) (*LoginToken, error)
-	Balance(context.Context, *empty.Empty) (*UserBalance, error)
+	Balance(context.Context, *ExistingUser) (*UserBalance, error)
 	mustEmbedUnimplementedUserManagerServer()
 }
 
@@ -83,7 +83,7 @@ func (UnimplementedUserManagerServer) CreateUser(context.Context, *NewUser) (*Us
 func (UnimplementedUserManagerServer) Login(context.Context, *empty.Empty) (*LoginToken, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
 }
-func (UnimplementedUserManagerServer) Balance(context.Context, *empty.Empty) (*UserBalance, error) {
+func (UnimplementedUserManagerServer) Balance(context.Context, *ExistingUser) (*UserBalance, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Balance not implemented")
 }
 func (UnimplementedUserManagerServer) mustEmbedUnimplementedUserManagerServer() {}
@@ -136,7 +136,7 @@ func _UserManager_Login_Handler(srv interface{}, ctx context.Context, dec func(i
 }
 
 func _UserManager_Balance_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(empty.Empty)
+	in := new(ExistingUser)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -148,7 +148,7 @@ func _UserManager_Balance_Handler(srv interface{}, ctx context.Context, dec func
 		FullMethod: "/usermanager.UserManager/Balance",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserManagerServer).Balance(ctx, req.(*empty.Empty))
+		return srv.(UserManagerServer).Balance(ctx, req.(*ExistingUser))
 	}
 	return interceptor(ctx, in, info, handler)
 }
